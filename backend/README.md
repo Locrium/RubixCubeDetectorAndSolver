@@ -23,8 +23,7 @@ pip install -r requirements.txt
 Node.js:
 ```
 cd frontend
-npm i -D daisyui@latest
-npm install tailwindcss@latest @tailwindcss/vite@latest daisyui@latest
+npm install
 ```
 
 

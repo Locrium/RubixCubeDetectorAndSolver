@@ -12,8 +12,8 @@ function CameraCapture() {
     const [isFetching, setIsFetching] = useState(false);
     const [scanIndex, setScanIndex] = useState(0);
     const [errorMessage, setErrorMessage] = useState("");
-    const [displaySolution, setIsDisplaySolution] = useState("U2 R L2 F B U L D R' F U B2 R2 D R2 B2 U L2 U' F2 U B2 L2 D2 R2");
-    //const [displaySolution, setIsDisplaySolution] = useState("");
+    //const [displaySolution, setIsDisplaySolution] = useState("U2 R L2 F B U L D R' F U B2 R2 D R2 B2 U L2 U' F2 U B2 L2 D2 R2");
+    const [displaySolution, setIsDisplaySolution] = useState("");
 
     // CameraCapture or wherever you define state
     const [colors, setColors] = useState(unfilledCube);
@@ -106,7 +106,13 @@ function CameraCapture() {
             advanceScanIndex();
 
             if (scanIndex === 5) {
-                const solutionData = await getSolution(colors);
+                const element = cubeFaces.find(face => face.character === cubeFaces[scanIndex].character);
+                const faceKey = element.facing;
+                const newColors = { ...colors };
+                newColors[faceKey] = [...faceScan.tiles];
+
+
+                const solutionData = await getSolution(newColors);
                 if (solutionData && solutionData.ok) {
                     console.log("Cube solution:", solutionData.solution);
                     setIsDisplaySolution(solutionData.solution);
@@ -187,31 +193,7 @@ function CameraCapture() {
         setColors(solvedCube)
     }
 
-    async function getFaceScan(face, image) {
-        try {
-            const blob = dataURLtoBlob(image);
-            const formData = new FormData();
-            formData.append("image", blob);
 
-            const response = await fetch(`/detect-cube?face=${face}`, {
-                method: "POST",
-                body: formData,
-            });
-
-            if (!response.ok) {
-                const err = await response.json();
-                console.error("Error about the response: ", err);
-                return null;
-            }
-
-            const data = await response.json();
-
-            return data;
-        } catch (error) {
-            console.error("Request failed:", error);
-            return null;
-        }
-    }
     return (
         <>
             {displaySolution ? (

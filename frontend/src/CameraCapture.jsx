@@ -194,62 +194,67 @@ function CameraCapture() {
     }
 
 
-    return (
-        <>
-            {displaySolution ? (
-                <CubeSolver solution={displaySolution} />
-            ) : (
-                <div>
-                    <div className="flex flex-col items-center justify-start border-amber-400">
-                        <div className="relative border" style={{ width: "1250px", height: "700px" }}>
+    return displaySolution ? (
+        <CubeSolver solution={displaySolution} />
+    ) : (
+        <div className="flex flex-col items-center gap-6">
+            <div className="relative w-[1100px] h-[650px] rounded-xl overflow-hidden shadow-lg">
+                <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover"
+                />
 
-                            <video
-                                ref={videoRef}
-                                autoPlay
-                                playsInline
-                                className="absolute top-0 inset-0 w-full h-full object-fit"
-                            />
-                            {isFetching && (
-                                <span
-                                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 loading loading-spinner text-error"
-                                    style={{ width: "150px", height: "150px" }}
-                                />
-                            )}
-                            <Instruction isFetching={isFetching} scanIndex={scanIndex} />
-                            {errorMessage.trim() !== "" && (
-                                <p className="absolute text-red-500 text-2xl top-[100px] translate-x-1/2 font-bold">{errorMessage}</p>)}
-                            <button
-                                className="absolute top-12/16 -translate-x-1/2 btn btn-soft btn-primary text-2xl w-[250px] h-[60px] disabled:bg-gray-400"
-                                onClick={capture}
-                                disabled={isFetching}
-                            >
-                                Scan Face
-                            </button>
-                            {image && <img className="w-[180px] h-[180px] absolute right-[20px] bottom-[20px]" src={image} alt="screenshot" />}
-                            <div className="absolute bottom-[50px] left-[50px] flex justify-center align-center"><SmallCube colors={colors} faceSize={64} /></div>
+                <div className="absolute inset-0 bg-black/20" />
 
-                            <div className=" left-1/2 -translate-x-1/2 absolute bottom-[50px] flex flex-row gap-10 justify-center items-center">
-                                <button className="btn btn-soft btn-error" disabled={isFetching} onClick={resetCube}>
-                                    Reset Cube
-                                </button>
-                                <button className="btn btn-soft btn-warning" disabled={isFetching} onClick={removeFace}>
-                                    Remove Previous Face
-                                </button>
-                            </div>
+                <Instruction isFetching={isFetching} scanIndex={scanIndex} />
 
-
-                        </div>
+                {isFetching && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+                        <span className="loading loading-spinner w-20 h-20 text-primary" />
+                        <p className="text-white text-xl">Scanning</p>
                     </div>
+                )}
 
+                {errorMessage && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <p className="text-red-400 text-2xl font-bold">{errorMessage}</p>
+                    </div>
+                )}
 
+                <button
+                    onClick={capture}
+                    disabled={isFetching}
+                    className="absolute bottom-6 left-1/2 -translate-x-1/2 btn btn-primary btn-lg w-[260px]"
+                >
+                    Scan Face
+                </button>
 
-
-                    <canvas ref={canvasRef} style={{ display: "none" }} />
-
-
+                <div className="absolute bottom-6 right-6">
+                    <SmallCube colors={colors} faceSize={72} />
                 </div>
-            )}
-        </>
+
+                {image && (
+                    <img
+                        src={image}
+                        alt="capture"
+                        className="absolute top-3 right-3 w-[160px] h-[160px] rounded-lg border"
+                    />
+                )}
+            </div>
+
+            <div className="flex gap-6">
+                <button className="btn btn-warning" onClick={removeFace}>
+                    Remove Previous
+                </button>
+                <button className="btn btn-error" onClick={resetCube}>
+                    Reset Cube
+                </button>
+            </div>
+
+            <canvas ref={canvasRef} className="hidden" />
+        </div>
     );
 }
 

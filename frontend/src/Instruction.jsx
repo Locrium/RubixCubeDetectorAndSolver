@@ -5,9 +5,9 @@ import Face from './Face';
 
 function Instruction({ isFetching, scanIndex }) {
 
-    const classArgs = "absolute top-[40px] left-1/2 -translate-x-1/2 text-4xl font-bold text-center";
+    const classArgs = "absolute top-[40px] left-1/2 -translate-x-1/2 text-3xl font-bold text-center";
     if (isFetching) {
-        return <div className={classArgs + " flex flex-row gap-5 items-center"}><span className="text-5xl">Waiting for server to scan face</span>
+        return <div className={classArgs + " flex flex-row gap-5 items-center"}><span className="text-4xl">Waiting for server to scan face</span>
 
         </div>;
     }

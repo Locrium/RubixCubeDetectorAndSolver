@@ -34,15 +34,16 @@ Cube: RYOWWROBOBBGGOYYWRWRWRGOWOGBWYGRBWGRGGYYBWYBOBYROYRBOG
 INFO: Creating tables\pruning_kociemba.npz (LONG!)
 Solution: U F L2 D R B2 D' L' B L2 U2 L2 D' R2 B2 U F2 D R2 D2 L2 U2 (22)
 """
-# scramble = Maneuver.random()
-# print(f"Scramble: {scramble}")
-#
-# cube = Cube(scramble)
-# print(cube)
-# print(f"Cube: {repr(cube)}")
-#
-# solver = Kociemba()
-# solution = solver.solve(cube)
-# assert solution is not None
-# assert solution == scramble.inverse
-# print(f"Solution: {solution} ({len(solution)})")
+
+""" 
+scramble = Maneuver.random()
+print(f"Scramble: {scramble}")
+cube = Cube(scramble)
+print(cube)
+print(f"Cube: {repr(cube)}")
+
+solver = Kociemba()
+solution = solver.solve(cube)
+assert solution is not None
+assert solution == scramble.inverse
+print(f"Solution: {solution} ({len(solution)})") """

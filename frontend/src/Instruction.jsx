@@ -3,13 +3,16 @@ import ColoredText from './ColoredText'
 import { cubeFaces, centerSticker, colorToChar } from "./cubeFaces";
 import Face from './Face';
 
-function Instruction({ isFetching, scanIndex }) {
+function Instruction({ isFetching, scanIndex, endScan }) {
 
     const classArgs = "absolute top-[40px] left-1/2 -translate-x-1/2 text-3xl font-bold text-center";
     if (isFetching) {
         return <div className={classArgs + " flex flex-row gap-5 items-center"}><span className="text-4xl">Waiting for server to scan face</span>
 
         </div>;
+    }
+    if (endScan) {
+        return <div className={classArgs + " flex flex-row gap-5 items-center"}><span className="text-4xl">Scan complete, generating solution</span></div>;
     }
 
     const face = cubeFaces[scanIndex];

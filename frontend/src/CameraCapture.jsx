@@ -12,6 +12,7 @@ function CameraCapture() {
     const [isFetching, setIsFetching] = useState(false);
     const [scanIndex, setScanIndex] = useState(0);
     const [errorMessage, setErrorMessage] = useState("");
+    const [endScan, setEndScan] = useState(false);
     //const [displaySolution, setIsDisplaySolution] = useState("U2 R L2 F B U L D R' F U B2 R2 D R2 B2 U L2 U' F2 U B2 L2 D2 R2");
     const [displaySolution, setIsDisplaySolution] = useState("");
 
@@ -110,7 +111,7 @@ function CameraCapture() {
                 const faceKey = element.facing;
                 const newColors = { ...colors };
                 newColors[faceKey] = [...faceScan.tiles];
-
+                setEndScan(true);
 
                 const solutionData = await getSolution(newColors);
                 if (solutionData && solutionData.ok) {
@@ -123,7 +124,7 @@ function CameraCapture() {
             }
         } else {
             setErrorMessage(faceScan.error);
-            setTimeout(() => setErrorMessage(""), 3000);
+            setTimeout(() => setErrorMessage(""), 10000);
         }
     }
 
@@ -163,8 +164,8 @@ function CameraCapture() {
                 console.error("Error about the response: ", err);
                 return null;
             }
-
             const data = await response.json();
+            console.log("Response received from /solve-cube:" + data);
 
             return data;
         } catch (error) {
@@ -208,7 +209,7 @@ function CameraCapture() {
 
                 <div className="absolute inset-0 bg-black/20" />
 
-                <Instruction isFetching={isFetching} scanIndex={scanIndex} />
+                <Instruction isFetching={isFetching} scanIndex={scanIndex} endScan={endScan} />
 
                 {isFetching && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">

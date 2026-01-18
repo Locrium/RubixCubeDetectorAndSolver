@@ -13,6 +13,7 @@ function CameraCapture() {
     const [scanIndex, setScanIndex] = useState(0);
     const [errorMessage, setErrorMessage] = useState("");
     const [displaySolution, setIsDisplaySolution] = useState("U2 R L2 F B U L D R' F U B2 R2 D R2 B2 U L2 U' F2 U B2 L2 D2 R2");
+    //const [displaySolution, setIsDisplaySolution] = useState("");
 
     // CameraCapture or wherever you define state
     const [colors, setColors] = useState(unfilledCube);
@@ -22,6 +23,14 @@ function CameraCapture() {
     function resetCube() {
         setColors(unfilledCube)
         setScanIndex(0);
+    }
+    function setSpecificColor(face, newColor, index) {
+        console.log("Setting color for face:", face, " index:", index, " to color:", newColor);
+        setColors(prev => {
+            const newColors = { ...prev };
+            newColors[face][index] = newColor;
+            return newColors;
+        });
     }
 
 

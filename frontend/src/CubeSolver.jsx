@@ -1,3 +1,4 @@
+
 // CubeSolver.jsx
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import VirtualCube from './utils/VirtualCube';
@@ -229,10 +230,10 @@ const CubeSolver = ({ solution }) => {
     // Data Preparation
     const solveData = {
         initialScramble: invertMoves(solution),
-        moves: solutionMoves
+        moves: solution
     };
-    const fullAlgorithm = useMemo(() => solveData.moves.join(' '), [solveData.moves]);
-    const totalSteps = solveData.moves.length;
+    const fullAlgorithm = useMemo(() => solveData.moves, [solveData.moves]);
+    const totalSteps = solveData.moves.split(' ').length;
 
     // Virtual Cube Instance (Ref to persist across renders)
     const virtualCubeRef = useRef(new VirtualCube());
@@ -241,7 +242,7 @@ const CubeSolver = ({ solution }) => {
     const stepToLeafIndexMap = useMemo(() => {
         const map = [];
         let cumulative = 0;
-        solveData.moves.forEach((moveLine, i) => {
+        solveData.moves.split(' ').forEach((moveLine, i) => {
             const count = moveLine.trim().split(/\s+/).length;
             cumulative += count;
             map.push({ stepIndex: i, endLeafIndex: cumulative });
@@ -254,7 +255,7 @@ const CubeSolver = ({ solution }) => {
         const vCube = new VirtualCube();
         vCube.applyAlgorithmWithRotations(solveData.initialScramble); // Start from scramble
 
-        return solveData.moves.map((moves, index) => {
+        return solveData.moves.split(' ').map((moves, index) => {
             // State BEFORE
             const prevCross = vCube.getCrossCount();
             const prevF2L = vCube.getF2LStatus();
@@ -509,7 +510,7 @@ const CubeSolver = ({ solution }) => {
         vCube.applyAlgorithmWithRotations(solveData.initialScramble);
 
         // 2. Apply moves up to current step
-        const movesToApply = solveData.moves.slice(0, currentStep).join(' ');
+        const movesToApply = solveData.moves.split(' ').slice(0, currentStep).join(' '); // may have to convert to string
         vCube.applyAlgorithmWithRotations(movesToApply);
 
         // 3. Check Flags

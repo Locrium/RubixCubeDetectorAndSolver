@@ -1,4 +1,3 @@
-// CubeSolver.jsx
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import VirtualCube from './utils/VirtualCube';
 
@@ -9,6 +8,10 @@ const invertMoves = (moveString) => {
         .trim()
         .split(/\s+/) // Split string into array of moves
         .map((move) => {
+            // If move contains '2', it is its own inverse (e.g. R2 -> R2)
+            if (move.includes("2")) {
+                return move;
+            }
             // If move has an apostrophe, remove it
             if (move.includes("'")) {
                 return move.replace("'", "");
@@ -20,23 +23,83 @@ const invertMoves = (moveString) => {
         .join(" "); // Join back into a string
 };
 
-// 1. Define the moves first from the backend
-const solutionMoves = [
-    "U' T' U"
-];
+// 1. Define the moves from the backend
+// Test Scenario: Cross + 2 F2L Pairs. Ends Unsolved.
+const solutionString = "F R' D2 B' L U' R U R' U L' U' L";
 
-// 2. Flatten them into a single string 
-const flattenedMoves = solutionMoves.join(" ");
+// SMART GROUPER: Groups moves into logical steps based on state changes
+const groupMovesSmart = (scramble, moveStr) => {
+    const moves = moveStr.trim().split(/\s+/);
+    const groups = [];
+    let currentGroup = [];
+
+    // Simulate to detect state changes
+    const vCube = new VirtualCube();
+    // Initialize properly: Solved -> Scramble -> Ready to Solve
+    vCube.reset(); // Solved (Yellow Top)
+    // Apply Scramble
+    vCube.applyAlgorithmWithRotations(scramble);
+
+    let prevCross = vCube.getCrossCount();
+    let prevF2L = vCube.getF2LStatus();
+    let prevOLL = vCube.checkOLL();
+
+    moves.forEach((move, i) => {
+        currentGroup.push(move);
+        vCube.applyAlgorithmWithRotations(move);
+
+        const cross = vCube.getCrossCount();
+        const f2l = vCube.getF2LStatus();
+        const oll = vCube.checkOLL();
+
+        // Check for Significant State Changes to trigger a split
+        let split = false;
+
+        // 1. Cross Piece Solved (Count increases)
+        if (cross > prevCross) split = true;
+
+        // 2. F2L Pair Solved (Any boolean flips true)
+        const f2lChange = (f2l.fr && !prevF2L.fr) || (f2l.fl && !prevF2L.fl) || (f2l.bl && !prevF2L.bl) || (f2l.br && !prevF2L.br);
+        if (f2lChange) split = true;
+
+        // 3. OLL Solved
+        if (oll && !prevOLL) split = true;
+
+        // 4. Force split if group gets too long (e.g. 8 moves) to avoid huge steps
+        if (currentGroup.length >= 8) split = true;
+
+        // 5. End of moves
+        if (i === moves.length - 1) split = true;
+
+        if (split) {
+            groups.push(currentGroup.join(" "));
+            currentGroup = []; // Reset
+            // Update baselines
+            prevCross = cross;
+            prevF2L = f2l;
+            prevOLL = oll;
+        }
+    });
+
+    return groups;
+};
+
+// Calculate Scramble First (Prepend z2 to rotate to Yellow Top/Green Front, apply U2 offset, THEN invert moves)
+const calculatedScramble = "z2 U2 " + invertMoves(solutionString);
+
+// Generate Logical Steps
+const solutionArr = groupMovesSmart(calculatedScramble, solutionString);
 
 // ============================================
 // MOCK BACKEND DATA
 // ============================================
 const mockSolveData = {
-    // Standard 20-move scramble
-    initialScramble: invertMoves(flattenedMoves),
-    // The Solution broken into Steps (One array item = One Sidebar Update)
-    moves: solutionMoves
+    initialScramble: calculatedScramble,
+    // The Solution broken into Logical Steps
+    moves: solutionArr
 };
+
+
 
 // ============================================
 // STEP ANALYZER
@@ -128,19 +191,14 @@ const StepAnalyzer = {
 
         const [name] = stageNames[stage] || ['Step'];
 
+        // STATE-FACTUAL SUMMARIES
+        // Instead of guessing "Edge X", we report the actual state count.
         if (stage === 'CROSS') {
-            // Use physical count + 1 to indicate which edge we are working on/solved
-            // Clamp to 4
-            const num = Math.min(4, (counts?.cross || 0) + (technique && technique.includes('Solved') ? 0 : 1));
-            // If we solved it this step, count is X. That means this step was Edge X.
-            // If count is X but we didn't solve anything, we are likely setting up Edge X+1.
-            const displayNum = counts ? (diff && diff.crossChange > 0 ? counts.cross : counts.cross + 1) : stepIndex + 1;
-            const safeNum = Math.min(4, displayNum);
-            return `${name} - Edge ${safeNum}`;
+            const count = counts?.cross || 0;
+            return `${name}: ${count}/4 Solved`;
         } else if (stage === 'F2L') {
-            const pairNum = counts ? (diff && (diff.f2lChange.fr || diff.f2lChange.fl || diff.f2lChange.bl || diff.f2lChange.br) ? counts.f2l : counts.f2l + 1) : (stepIndex - 3);
-            const safePair = Math.min(4, Math.max(1, pairNum));
-            return `F2L Pair ${safePair}`;
+            const count = counts?.f2l || 0;
+            return `F2L: ${count}/4 Pairs`;
         } else if (technique) {
             return `${stage}: ${technique}`;
         }
@@ -148,25 +206,24 @@ const StepAnalyzer = {
     },
 
     generateDetail(stage, moves, technique, patterns) {
-        const details = {
-            CROSS: "Solving a cross edge piece to build the white cross foundation.",
-            F2L: "Pairing and inserting a corner-edge pair into the correct slot.",
-            OLL: "Orienting the last layer pieces to make the top face yellow.",
-            PLL: "Permuting the last layer pieces to their solved positions.",
-            AUF: "Final alignment turn to complete the solve.",
-        };
-
-        let detail = details[stage] || "Executing algorithm.";
-
-        if (technique) {
-            detail = `Using ${technique} technique. ${detail}`;
+        if (stage === 'CROSS') {
+            if (technique && technique.includes('Solved')) {
+                return "Good job! That move solved a White Cross edge. We're building the foundation on the bottom face.";
+            }
+            return "Positioning the cross pieces. Keep an eye on the white edges moving to the bottom.";
         }
 
-        if (patterns.length > 0) {
-            detail += ` Recognized pattern: ${patterns[0].name}.`;
+        if (stage === 'F2L') {
+            if (technique && technique.includes('Inserted')) {
+                return `Nice! You just paired and inserted a Corner-Edge pair (${technique.replace('Inserted ', '')}). The first two layers are coming together.`;
+            }
+            return "Finding and pairing a corner with its edge. Look for matching colors on the front and right face.";
         }
 
-        return detail;
+        if (stage === 'OLL') return "Now we orient the last layer. The goal is to make the entire top face yellow, regardless of the sides.";
+        if (stage === 'PLL') return "Finally, we permute the last layer pieces. We're swapping them around to finish the cube!";
+
+        return "Following the solution algorithm.";
     },
 
     countMoves(moves) {
@@ -317,6 +374,7 @@ const CubeSolver = () => {
                     visualization: '3D',
                     tempoScale: 0, // CRITICAL: Disable native playback so we drive it manually
                     experimentalDragInput: 'auto',
+                    cameraDistance: 6, // FIX: Static camera distance to prevent zooming
                 });
 
                 player.style.width = '100%';
@@ -558,6 +616,20 @@ const CubeSolver = () => {
         isPlayingRef.current = false;
     }, []);
 
+    // Keyboard Navigation
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'ArrowRight') {
+                handleStepForward();
+            } else if (e.key === 'ArrowLeft') {
+                handleStepBackward();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [handleStepForward, handleStepBackward]);
+
     // Fullscreen
     const toggleFullscreen = useCallback(async () => {
         try {
@@ -762,18 +834,7 @@ const CubeSolver = () => {
                     </div>
                 </div>
 
-                <aside style={styles.infoPanel}>
-                    {currentStep === 0 ? (
-                        <InitialStatePanel solveData={solveData} totalSteps={totalSteps} analyzedSteps={analyzedSteps} />
-                    ) : activeStepInfo ? (
-                        <StepInfoPanel
-                            stepInfo={activeStepInfo}
-                            stepIndex={currentStep - 1}
-                            totalSteps={totalSteps}
-                            cubeState={cubeState}
-                        />
-                    ) : null}
-                </aside>
+                {/* Sidebar removed as requested */}
             </div>
 
             <div style={styles.controlBar}>
@@ -818,17 +879,7 @@ const CubeSolver = () => {
                     <div style={styles.playbackControls}>
                         <button onClick={handleReset} style={{ ...styles.iconButton, fontSize: '1.25rem' }} title="Reset">⟲</button>
                         <button onClick={handleStepBackward} style={styles.navButton}>← Prev</button>
-                        <button
-                            onClick={togglePlay}
-                            style={{
-                                ...styles.playButton,
-                                background: isPlaying ? 'linear-gradient(135deg, #ef4444, #f97316)' : 'linear-gradient(135deg, #8b5cf6, #6366f1)',
-                                color: '#ffffff',
-                                boxShadow: isPlaying ? '0 0 30px rgba(239, 68, 68, 0.4)' : '0 0 30px rgba(139, 92, 246, 0.4)',
-                            }}
-                        >
-                            {isPlaying ? '⏸ Pause' : '▶ Play'}
-                        </button>
+                        {/* Play button removed as requested */}
                         <button onClick={handleStepForward} style={styles.navButton}>Next →</button>
                         <button onClick={handleJumpToEnd} style={{ ...styles.iconButton, fontSize: '1.25rem' }} title="Jump to end">⏭</button>
                     </div>

@@ -9,6 +9,7 @@ class VirtualCube {
 
     reset() {
         // Facelets: U:0-8, R:9-17, F:18-26, D:27-35, L:36-44, B:45-53
+        // Standard Orientation (TwistyPlayer Default): White Top (U), Yellow Bottom (D), Green Front (F)
         // Colors: U:White('w'), R:Red('r'), F:Green('g'), D:Yellow('y'), L:Orange('o'), B:Blue('b')
         this.state = [
             ...'wwwwwwwww', // U (0-8)

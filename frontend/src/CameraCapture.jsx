@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import SmallCube from "./SmallCube.jsx";
-import { cubeFaces, faceTextColor, unfilledCube, solvedCube } from "./cubeFaces";
+import { cubeFaces, dataURLtoBlob, unfilledCube, solvedCube } from "./cubeFaces";
 import Instruction from "./Instruction.jsx";
 
 // instructions are of the form: scan [white] face with [blue] on top.
@@ -18,6 +18,8 @@ function CameraCapture() {
     const [image, setImage] = useState(null);
     const [isFetching, setIsFetching] = useState(false);
     const [scanIndex, setScanIndex] = useState(0);
+    const [errorMessage, setErrorMessage] = useState("");
+
     // CameraCapture or wherever you define state
     const [colors, setColors] = useState(unfilledCube);
     function isScanComplete() {
@@ -38,7 +40,7 @@ function CameraCapture() {
             });
     }, []);
 
-    const capture = () => {
+    const capture = async () => {
         const video = videoRef.current;
         const canvas = canvasRef.current;
 
@@ -46,17 +48,58 @@ function CameraCapture() {
         canvas.height = video.videoHeight;
 
         canvas.getContext("2d").drawImage(video, 0, 0);
-        setImage(canvas.toDataURL("image/png"));
+        const dataUrl = canvas.toDataURL("image/png", 0.8);
+        setImage(dataUrl);
 
-
-        console.log(isScanComplete());
         setIsFetching(true);
-        // Simulate a server request
-        setTimeout(() => {
-            setIsFetching(false);
-            setScanIndex(scanIndex => scanIndex + 1)
+        setErrorMessage("");
 
-        }, 2000)
+        /*
+        return {
+            "ok": False,
+            "error": "Invalid center color selected.",
+            "tiles": None,
+            "detected_center": None,
+        }
+        
+        */
+        try {
+            const faceScan = await getFaceScan(
+                cubeFaces[scanIndex].character,
+                dataUrl
+            );
+            console.log("Face scan data:", faceScan);
+            if (faceScan !== null) {
+
+                console.log("Cube face response:", faceScan);
+                if (faceScan.ok) {
+                    setScanIndex(scanIndex => scanIndex + 1);
+                    // add the received array to the colors state
+                    // compare the center square with the cubeFaces[scanIndex].character. to see if its  the same
+                    // get in the cubeFace array the element such that the character is the cubeFaces[scanIndex].character
+                    // get the starter index of the colors from the element found 
+                    // start from that start index and replace the subsequent characters by the array
+                    // the 2d representation of the array should have one more face. 
+
+
+
+                }
+                else {
+                    setErrorMessage(faceScan.error);
+                    setTimeout(() => setErrorMessage(faceScan.error), 3000);
+                }
+            }
+            else {
+                console.log("No face scan data");
+            }
+        } catch (e) {
+            setErrorMessage("something went wrong");
+        } finally {
+            setIsFetching(false);
+        }
+
+
+
 
     };
     function setGrey() {
@@ -65,10 +108,37 @@ function CameraCapture() {
     function setComplete() {
         setColors(solvedCube)
     }
+
+    async function getFaceScan(face, image) {
+        try {
+            const blob = dataURLtoBlob(image);
+            const formData = new FormData();
+            formData.append("image", blob);
+
+            const response = await fetch(`/detect-cube?face=${face}`, {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                console.error("Error about the response: ", err);
+                return null;
+            }
+
+            const data = await response.json();
+
+            return data;
+        } catch (error) {
+            console.error("Request failed:", error);
+            return null;
+        }
+    }
     return (
         <>
             <div>
                 <Instruction isFetching={isFetching} scanIndex={scanIndex} />
+                {errorMessage.trim() != "" && <p>{errorMessage}</p>}
                 <div className="flex items-center justify-center">
                     <div className="relative border" style={{ width: "1000px", height: "750px" }}>
                         <video
@@ -94,6 +164,7 @@ function CameraCapture() {
 
                 <canvas ref={canvasRef} style={{ display: "none" }} />
                 <SmallCube colors={colors} faceSize={64} />
+                {image && <img src={image} alt="screenshot" />}
             </div>
 
         </>

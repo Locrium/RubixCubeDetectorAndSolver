@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from google.genai import types
 
 import json
@@ -31,3 +32,5 @@ def health():
 @app.post("/detect-cube")
 async def detect_cube(face: str, image: UploadFile = File(...)):
   return await dc.detect_face_by_center(face, image)
+
+app.mount("/", StaticFiles(directory="../frontend/dist", html=True), name="frontend")

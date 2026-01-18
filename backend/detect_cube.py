@@ -11,7 +11,6 @@ CENTER_DETECTION_PROMPT = """
 You are labeling ONE face of a standard Rubik’s Cube from a photo.
 
 IMPORTANT:
-- The center sticker (tile index 4) is exactly: {center}
 - You MUST label only that face and ignore others.
 
 Allowed letters:
@@ -27,7 +26,6 @@ Rules:
   [top-left, top-middle, top-right,
    middle-left, center, middle-right,
    bottom-left, bottom-middle, bottom-right]
-- The center (5th entry, index 4) MUST be "{center}".
 - If a sticker is unclear, put "?" (but NOT for the center).
 - No guessing. No extra keys. No extra text. No markdown.
 """
@@ -47,7 +45,7 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 
 
 
-async def detect_face_by_center(center: str, image: UploadFile, client):
+async def detect_face_by_center(center: str, image: UploadFile):
     center = (center or "").strip().upper()
 
     if center not in VALID_CENTER_COLORS:
@@ -75,7 +73,7 @@ async def detect_face_by_center(center: str, image: UploadFile, client):
             "detected_center": None,
         }
 
-    prompt = CENTER_DETECTION_PROMPT.format(center=center)
+    prompt = CENTER_DETECTION_PROMPT
 
     try:
         response = client.models.generate_content(
@@ -100,7 +98,7 @@ async def detect_face_by_center(center: str, image: UploadFile, client):
     if not raw:
         return {
             "ok": False,
-            "error": "The image could not be read clearly.",
+            "error": f'The image could not be read clearly. response: {raw}',
             "tiles": None,
             "detected_center": None,
         }

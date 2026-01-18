@@ -31,6 +31,14 @@ Rules:
 """
 
 
+def rotate90Degrees(tiles):
+    
+    return [
+        tiles[8], tiles[7], tiles[6],
+        tiles[5], tiles[4], tiles[3],
+        tiles[2], tiles[1], tiles[0],
+    ]
+    
 VALID_CENTER_COLORS = {"W", "G", "R", "Y", "B", "O"}
 VALID_TILES = {"W", "G", "R", "Y", "B", "O", "?"}
 
@@ -140,7 +148,9 @@ async def detect_face_by_center(center: str, image: UploadFile):
             "tiles": None,
             "detected_center": detected_center,
         }
-
+    if(detected_center == "W" or detected_center == "Y"): 
+        #tiles = rotate90Degrees(tiles)
+        print("Rotated Counter-Clockwise")
     return {
         "ok": True,
         "error": None,

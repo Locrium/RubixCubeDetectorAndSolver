@@ -2,11 +2,22 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from google.genai import types
+from pydantic import BaseModel
+from typing import List, Dict
+import cubeSolver
 
 import json
 import detect_cube as dc
 
 app = FastAPI()
+
+class CubeColors(BaseModel):
+    front: List[str]
+    back: List[str]
+    left: List[str]
+    right: List[str]
+    top: List[str]
+    bottom: List[str]
 
 # Allow frontend (Vite / React) to call backend
 app.add_middleware(
@@ -26,8 +37,26 @@ app.add_middleware(
 def health():
     return {"ok": True}
 
-
-
+@app.post("/solve-cube")
+def solveCube(colors: CubeColors):
+    all_tiles = (
+        colors.front +
+        colors.left +
+        colors.top +
+        colors.right +
+        colors.bottom +
+        colors.back
+    )
+    cube_string = "".join(all_tiles)
+    print(f"Received cube string: {cube_string}")
+    result = cubeSolver.solveCube(cube_string)
+    print(f"Result: {result}")
+    response = {
+        "ok": result[0],
+        "solution": result[1] if result[0] else None,
+        "error": result[1] if not result[0] else None,
+    }
+    return response
 
 @app.post("/detect-cube")
 async def detect_cube(face: str, image: UploadFile = File(...)):

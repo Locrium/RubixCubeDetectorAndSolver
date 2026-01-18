@@ -18,21 +18,21 @@ export const cubeFaces = [
         character: "W",
         range: [18, 26],
         facing: "top",
-        top: "orange"
+        top: "green"
     },
     {
         name: "orange",
         character: "O",
         range: [27, 35],
         facing: "right",
-        top: "blue"
+        top: "green"
     },
     {
         name: "yellow",
         character: "Y",
         range: [36, 44],
         facing: "bottom",
-        top: "red"
+        top: "green"
     },
     {
         name: "blue",
@@ -53,9 +53,9 @@ export const faceTextColor = {
 
 export const charToColor = {
     W: "bg-white",
-    Y: "bg-yellow-500",
-    R: "bg-red-500",
-    O: "bg-orange-500",
+    Y: "bg-[#fdff15]",
+    R: "bg-[#ff0000]",
+    O: "bg-[#ffa900]",
     B: "bg-blue-500",
     G: "bg-green-500",
     _: "bg-gray-400", // optional for unknown / empty

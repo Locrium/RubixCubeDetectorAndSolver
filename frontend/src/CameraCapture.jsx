@@ -12,6 +12,8 @@ import Instruction from "./Instruction.jsx";
 // orange 28-36: blue on top : right
 // yellow 37-45: red on top : bottom
 // blue 46-54: white on top : back
+
+
 function CameraCapture() {
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
@@ -71,22 +73,43 @@ function CameraCapture() {
             console.log("Face scan data:", faceScan);
             if (faceScan !== null) {
 
-                console.log("Cube face response:", faceScan);
-                if (faceScan.ok) {
-                    setScanIndex(scanIndex => scanIndex + 1);
+
+                if (faceScan.ok && faceScan.detected_center === cubeFaces[scanIndex].character) {
+
+                    if (scanIndex < 5) setScanIndex(scanIndex => scanIndex + 1);
+
+                    const element = cubeFaces.find(face => face.character === cubeFaces[scanIndex].character);
+                    const startIndex = element.startIndex
+                    const faceKey = element.facing;
+
+
                     // add the received array to the colors state
-                    // compare the center square with the cubeFaces[scanIndex].character. to see if its  the same
-                    // get in the cubeFace array the element such that the character is the cubeFaces[scanIndex].character
+                    // /////compare the center square with the cubeFaces[scanIndex].character. to see if its  the same
+                    // ///////// get in the cubeFace array the element such that the character is the cubeFaces[scanIndex].character
                     // get the starter index of the colors from the element found 
                     // start from that start index and replace the subsequent characters by the array
                     // the 2d representation of the array should have one more face. 
+                    const newColors = { ...colors };
+                    newColors[faceKey] = [...colors[faceKey]];
+                    for (let i = 0; i < faceScan.tiles.length; i++) {
+                        newColors[faceKey][i] = faceScan.tiles[i];
+                    }
 
-
-
+                    setColors(newColors);                             // new reference triggers re-render
+                    if (scanIndex == 5) {
+                        const solutionData = await getSolution(newColors);
+                        if (solutionData && solutionData.ok) {
+                            console.log("Cube solution:", solutionData.solution);
+                        }
+                        else {
+                            setErrorMessage("Could not get solution");
+                            setTimeout(() => setErrorMessage(""), 10000);
+                        }
+                    }
                 }
                 else {
                     setErrorMessage(faceScan.error);
-                    setTimeout(() => setErrorMessage(faceScan.error), 3000);
+                    setTimeout(() => setErrorMessage(""), 3000);
                 }
             }
             else {
@@ -94,6 +117,7 @@ function CameraCapture() {
             }
         } catch (e) {
             setErrorMessage("something went wrong");
+            setTimeout(() => setErrorMessage(""), 3000);
         } finally {
             setIsFetching(false);
         }
@@ -102,6 +126,47 @@ function CameraCapture() {
 
 
     };
+
+    async function getSolution(CubeColors) {
+        console.log("Getting solution for cube colors: ", CubeColors);
+        try {
+
+
+
+            const response = await fetch(`/solve-cube`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(CubeColors),
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                console.error("Error about the response: ", err);
+                return null;
+            }
+
+            const data = await response.json();
+
+            return data;
+        } catch (error) {
+            console.error("Request failed:", error);
+            return null;
+        }
+
+
+    }
+
+    function removeFace() {
+        if (scanIndex == 0) return;
+        const element = cubeFaces.find(face => face.character === cubeFaces[scanIndex - 1].character);
+        const faceKey = element.facing;
+        setColors(prev => {
+            const newColors = { ...prev };                 // copy top-level object
+            newColors[faceKey] = Array(9).fill("_");      // reset array for the face
+            return newColors;                             // new reference triggers re-render
+        });
+        setScanIndex(scanIndex - 1);
+    }
     function setGrey() {
         setColors(unfilledCube)
     }
@@ -138,7 +203,7 @@ function CameraCapture() {
         <>
             <div>
                 <Instruction isFetching={isFetching} scanIndex={scanIndex} />
-                {errorMessage.trim() != "" && <p>{errorMessage}</p>}
+                {errorMessage.trim() != "" && <p className="text-red-500 text-3xl font-bold">{errorMessage}</p>}
                 <div className="flex items-center justify-center">
                     <div className="relative border" style={{ width: "1000px", height: "750px" }}>
                         <video
@@ -161,6 +226,7 @@ function CameraCapture() {
                 <button className="btn btn-soft btn-primary" onClick={setGrey} >set Cube Grey</button>
                 <button className="btn btn-soft btn-primary" onClick={setComplete}>set Cube colors</button>
                 <button className="btn btn-soft btn-primary" onClick={resetCube}>Reset Cube</button>
+                <button className="btn btn-soft btn-primary" onClick={removeFace}>Remove Previous Face</button>
 
                 <canvas ref={canvasRef} style={{ display: "none" }} />
                 <SmallCube colors={colors} faceSize={64} />

@@ -190,7 +190,7 @@ const StepAnalyzer = {
 // ============================================
 // MAIN COMPONENT
 // ============================================
-const CubeSolver = () => {
+const CubeSolver = ({ solution }) => {
     const containerRef = useRef(null);
     const playerRef = useRef(null);
     const wrapperRef = useRef(null);
@@ -227,7 +227,10 @@ const CubeSolver = () => {
     const [cubeState, setCubeState] = useState({ cross: false, f2l: false, oll: false });
 
     // Data Preparation
-    const solveData = mockSolveData;
+    const solveData = {
+        initialScramble: invertMoves(solution),
+        moves: solutionMoves
+    };
     const fullAlgorithm = useMemo(() => solveData.moves.join(' '), [solveData.moves]);
     const totalSteps = solveData.moves.length;
 

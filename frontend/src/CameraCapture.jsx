@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import SmallCube from "./SmallCube.jsx";
-import { cubeFaces, dataURLtoBlob, unfilledCube, solvedCube } from "./cubeFaces";
+import { cubeFaces, dataURLtoBlob, unfilledCube, solvedCube, translateCubeFormat } from "./cubeFaces";
 import Instruction from "./Instruction.jsx";
 
 // instructions are of the form: scan [white] face with [blue] on top.
@@ -106,6 +106,7 @@ function CameraCapture() {
                         const solutionData = await getSolution(newColors);
                         if (solutionData && solutionData.ok) {
                             console.log("Cube solution:", solutionData.solution);
+
                         }
                         else {
                             setErrorMessage("Could not get solution");
@@ -132,13 +133,7 @@ function CameraCapture() {
 
 
     };
-    function translateCubeFormat(input) {
-        const output = {};
-        for (const face in input) {
-            output[face] = [input[face].join("")];
-        }
-        return output;
-    }
+
 
     async function getSolution(CubeColors) {
         console.log("Getting solution for cube colors: ", CubeColors);

@@ -103,3 +103,11 @@ export function dataURLtoBlob(dataURL) {
 
 // everyone who had blue, change with white
 // everyone who had white, change with green
+
+export function translateCubeFormat(input) {
+    const output = {};
+    for (const face in input) {
+        output[face] = [input[face].join("")];
+    }
+    return output;
+}

@@ -13,8 +13,8 @@ Solve a rubiks using AI vision
 
 
 ## Prerequisites
-Python 3.12 or 3.13 is required
-Node.js
+* Python 3.12 or 3.13 is required
+* Node.js
 
 
 ## Installing dependencies

@@ -1,18 +1,21 @@
 from cube_solver import *
 
 def solveCube(cube_string):
-    # Solve cube and return it
-    if len(cube_string) != 54:
-        return (False, "String length is not correct!")
-    if not cube_string.isalpha() or not cube_string.isupper():
-        return (False, "String representation contains invalid characters!")
-    cube_object = Cube(repr=cube_string)
-    solver = Kociemba()
-    solution = solver.solve(cube_object)
-    if solution is None:
-        return (False, "No solution could be found!")
-    # print(solution)
-    return (True, solution)
+    try:
+        # Solve cube and return it
+        if len(cube_string) != 54:
+            return (False, "String length is not correct!")
+        if not cube_string.isalpha() or not cube_string.isupper():
+            return (False, "String representation contains invalid characters!")
+        cube_object = Cube(repr=cube_string)
+        solver = Kociemba()
+        solution = solver.solve(cube_object)
+        if solution is None:
+            return (False, "No solution could be found!")
+        # print(solution)
+        return (True, solution)
+    except Exception as e:
+        return (False, str(e))
 
 # Example code for debugging
 """

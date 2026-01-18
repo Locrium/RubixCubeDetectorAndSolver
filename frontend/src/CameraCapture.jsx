@@ -13,6 +13,12 @@ import Instruction from "./Instruction.jsx";
 // yellow 37-45: red on top : bottom
 // blue 46-54: white on top : back
 
+// the left is orange
+// the right is red
+// the front is green
+// the back is blue
+// the top is white
+// the bottom is yellow
 
 function CameraCapture() {
     const videoRef = useRef(null);
@@ -126,17 +132,24 @@ function CameraCapture() {
 
 
     };
+    function translateCubeFormat(input) {
+        const output = {};
+        for (const face in input) {
+            output[face] = [input[face].join("")];
+        }
+        return output;
+    }
 
     async function getSolution(CubeColors) {
         console.log("Getting solution for cube colors: ", CubeColors);
         try {
 
-
+            const goodFormat = translateCubeFormat(CubeColors);
 
             const response = await fetch(`/solve-cube`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(CubeColors),
+                body: JSON.stringify(goodFormat),
             });
 
             if (!response.ok) {

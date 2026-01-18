@@ -40,12 +40,12 @@ def health():
 @app.post("/solve-cube")
 def solveCube(colors: CubeColors):
     all_tiles = (
-        colors.front +
-        colors.left +
         colors.top +
+        colors.left +
+        colors.front +
         colors.right +
-        colors.bottom +
-        colors.back
+        colors.back +
+        colors.bottom
     )
     cube_string = "".join(all_tiles)
     print(f"Received cube string: {cube_string}")

@@ -30,6 +30,7 @@ Rules:
 - The center (5th entry, index 4) MUST be "{center}".
 - If a sticker is unclear, put "?" (but NOT for the center).
 - No guessing. No extra keys. No extra text. No markdown.
+- Only return an array if you are absolutely sure the face is complelely visible
 """
 
 
@@ -47,7 +48,7 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 
 
 
-async def detect_face_by_center(center: str, image: UploadFile, client):
+async def detect_face_by_center(center: str, image: UploadFile):
     center = (center or "").strip().upper()
 
     if center not in VALID_CENTER_COLORS:

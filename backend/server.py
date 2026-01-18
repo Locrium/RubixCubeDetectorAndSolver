@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from google.genai import types
 
 import json
-import detect_cube as dc
+from . import detect_cube as dc
 
 app = FastAPI()
 

@@ -6,18 +6,15 @@ def solveCube(cube_string):
         return "String length is not correct!"
     if not cube_string.isalpha() or not cube_string.isupper():
         return "String representation contains invalid characters!"
-
     cube_object = Cube(repr=cube_string)
     solver = Kociemba()
     solution = solver.solve(cube_object)
-
     if solution is None:
         return "No solution could be found!"
-
+    # print(solution)
     return solution
 
-
-# Example code for debugging (reference output only)
+# Example code for debugging
 """
 Scramble: B' U' R2 B2 D F2 L2 D' R' U F U D' R2 F' B' L2 B' D2 B L U2 B' U B2
         ---------
@@ -34,27 +31,19 @@ Scramble: B' U' R2 B2 D F2 L2 D' R' U F U D' R2 F' B' L2 B' D2 B L U2 B' U B2
         | B O G |
         ---------
 Cube: RYOWWROBOBBGGOYYWRWRWRGOWOGBWYGRBWGRGGYYBWYBOBYROYRBOG
-INFO: Creating tables\\pruning_kociemba.npz (LONG!)
+INFO: Creating tables\pruning_kociemba.npz (LONG!)
 Solution: U F L2 D R B2 D' L' B L2 U2 L2 D' R2 B2 U F2 D R2 D2 L2 U2 (22)
 """
 
+""" 
+scramble = Maneuver.random()
+print(f"Scramble: {scramble}")
+cube = Cube(scramble)
+print(cube)
+print(f"Cube: {repr(cube)}")
 
-# =========================
-# EXECUTABLE DEBUGGING CODE
-# =========================
-if __name__ == "__main__":
-    scramble = Maneuver.random()
-    print(f"Scramble: {scramble}")
-
-    cube = Cube(scramble)
-    print(cube)
-    print(f"Cube: {repr(cube)}")
-
-    solver = Kociemba()
-    solution = solver.solve(cube)
-
-    assert solution is not None
-    assert solution == scramble.inverse
-
-    print(f"Solution: {solution} ({len(solution)})")
-    print("✔ Cube solved and verified")
+solver = Kociemba()
+solution = solver.solve(cube)
+assert solution is not None
+assert solution == scramble.inverse
+print(f"Solution: {solution} ({len(solution)})") """

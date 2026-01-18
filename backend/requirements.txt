@@ -2,3 +2,7 @@ numpy
 matplotlib
 fastapi[standard]
 pydantic
+cube-solver
+python-dotenv
+google-genai
+

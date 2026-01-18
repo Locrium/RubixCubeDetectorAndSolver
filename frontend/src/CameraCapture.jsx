@@ -229,10 +229,10 @@ function CameraCapture() {
                             <div className="absolute bottom-[50px] left-[50px] flex justify-center align-center"><SmallCube colors={colors} faceSize={64} /></div>
 
                             <div className=" left-1/2 -translate-x-1/2 absolute bottom-[50px] flex flex-row gap-10 justify-center items-center">
-                                <button className="btn btn-soft btn-error" onClick={resetCube}>
+                                <button className="btn btn-soft btn-error" disabled={isFetching} onClick={resetCube}>
                                     Reset Cube
                                 </button>
-                                <button className="btn btn-soft btn-warning" onClick={removeFace}>
+                                <button className="btn btn-soft btn-warning" disabled={isFetching} onClick={removeFace}>
                                     Remove Previous Face
                                 </button>
                             </div>

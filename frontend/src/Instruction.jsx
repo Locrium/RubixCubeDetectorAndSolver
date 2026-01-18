@@ -1,24 +1,30 @@
 
 import ColoredText from './ColoredText'
-import { cubeFaces } from "./cubeFaces";
+import { cubeFaces, centerSticker, colorToChar } from "./cubeFaces";
+import Face from './Face';
 
 function Instruction({ isFetching, scanIndex }) {
 
-    let classArgs = "text-6xl mb-8 font-bold text-center";
+    const classArgs = "absolute top-[40px] left-1/2 -translate-x-1/2 text-4xl font-bold text-center";
     if (isFetching) {
-        return <h1 className={classArgs}>Waiting for server to scan face</h1>;
+        return <div className={classArgs + " flex flex-row gap-5 items-center"}><span className="text-5xl">Waiting for server to scan face</span>
+
+        </div>;
     }
 
     const face = cubeFaces[scanIndex];
 
     return (
-        <p className={classArgs}>
-            Scan{" "}
-            <ColoredText text={face.name} color={face.name} />{" "}
-            face with{" "}
-            <ColoredText text={face.top} color={face.top} />{" "}
-            on top
-        </p>
+        <div className={`${classArgs} flex flex-row items-center gap-2 whitespace-nowrap`}>
+            <span>Scan</span>
+            <ColoredText text={face.name} color={face.name} />
+            <Face colors={centerSticker(face.character)} faceSize={64} />
+            <span> face with</span>
+            <ColoredText text={face.top} color={face.top} />
+            <Face colors={centerSticker(colorToChar[face.top])} faceSize={64} />
+            <span>face pointing up</span>
+        </div>
+
     );
 }
 

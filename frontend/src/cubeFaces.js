@@ -62,6 +62,9 @@ export const charToColor = {
     G: "bg-green-500",
     _: "bg-gray-400", // optional for unknown / empty
 };
+export function centerSticker(color) {
+    return ["_", "_", "_", "_", color, "_", "_", "_", "_",]
+}
 
 export const colorToChar = {
     white: "W",
@@ -73,12 +76,12 @@ export const colorToChar = {
     gray: "_", // optional for unknown / empty
 };
 export const unfilledCube = {
-    front: ["G", ...Array(8).fill("_")],   // green not good. must be 90
-    back: ["B", ...Array(8).fill("_")],    // blue
-    left: ["O", ...Array(8).fill("_")],    // orange not good. must be white
-    right: ["R", ...Array(8).fill("_")],   // red
-    top: ["W", ...Array(8).fill("_")],     // white
-    bottom: ["Y", ...Array(8).fill("_")],  // yellow
+    front: centerSticker("G"),  // Red
+    back: centerSticker("B"),   // Orange
+    left: centerSticker("O"),   // Blue
+    right: centerSticker("R"),  // Green
+    top: centerSticker("W"),    // White
+    bottom: centerSticker("Y"), // Yellow
 };
 
 

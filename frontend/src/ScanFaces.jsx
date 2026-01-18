@@ -9,7 +9,6 @@ function ScanFaces() {
 
     return (
         <>
-
             <CameraCapture />
         </>
     )

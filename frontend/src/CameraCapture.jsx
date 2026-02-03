@@ -207,7 +207,7 @@ function CameraCapture() {
                     className="absolute inset-0 w-full h-full object-cover"
                 />
 
-                <div className="absolute inset-0 bg-black/20" />
+                <div className="absolute inset-0 bg-black/10" />
 
                 <Instruction isFetching={isFetching} scanIndex={scanIndex} endScan={endScan} />
 
